@@ -3,14 +3,16 @@
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import type { ReactNode } from 'react';
 
-interface Props {
+interface ThemeProviderProps {
   children: ReactNode;
 }
 
-export function ThemeProvider({ children }: Props) {
+const ThemeProvider = ({ children }: ThemeProviderProps) => {
   return (
     <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem>
       {children}
     </NextThemesProvider>
   );
-} 
+}
+
+export { ThemeProvider }; 
