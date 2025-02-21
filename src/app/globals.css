@@ -59,6 +59,24 @@
   }
 }
 
+@layer utilities {
+  .animate-gradient-x {
+    animation: gradient-x 15s linear infinite;
+  }
+
+  @keyframes gradient-x {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+}
+
 .glass-effect {
   @apply backdrop-blur-lg bg-white/[0.02] dark:bg-black/[0.02] border border-white/[0.05] dark:border-black/[0.05];
   box-shadow: 
