@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function AboutPage() {
   const skills = {
@@ -84,17 +85,30 @@ export default function AboutPage() {
           className="glass-effect p-8 rounded-2xl"
         >
           <h2 className="text-3xl font-bold text-gradient mb-6">Introduction</h2>
-          <div className="prose prose-invert max-w-none">
-            <p className="text-lg text-gray-300 leading-relaxed">
-              I'm a full-stack developer with over 5 years of experience in building web applications.
-              My journey in software development started with a curiosity for creating interactive experiences,
-              which has evolved into a passion for building scalable and user-friendly applications.
-            </p>
-            <p className="text-lg text-gray-300 leading-relaxed mt-4">
-              I specialize in modern web technologies and believe in writing clean, maintainable code
-              that solves real-world problems. When I'm not coding, I enjoy contributing to open-source
-              projects and sharing my knowledge with the developer community.
-            </p>
+          <div className="flex flex-col md:flex-row gap-8 items-center">
+            <div className="w-full md:w-1/3">
+              <div className="relative w-full aspect-square rounded-2xl overflow-hidden">
+                <Image
+                  src="/images/portrait.jpg"
+                  alt="Professional portrait"
+                  fill
+                  className="object-cover hover:scale-105 transition-transform duration-300"
+                  priority
+                />
+              </div>
+            </div>
+            <div className="w-full md:w-2/3 prose prose-invert max-w-none">
+              <p className="text-lg text-gray-300 leading-relaxed">
+                I'm a full-stack developer with over 5 years of experience in building web applications.
+                My journey in software development started with a curiosity for creating interactive experiences,
+                which has evolved into a passion for building scalable and user-friendly applications.
+              </p>
+              <p className="text-lg text-gray-300 leading-relaxed mt-4">
+                I specialize in modern web technologies and believe in writing clean, maintainable code
+                that solves real-world problems. When I'm not coding, I enjoy contributing to open-source
+                projects and sharing my knowledge with the developer community.
+              </p>
+            </div>
           </div>
         </motion.section>
 
