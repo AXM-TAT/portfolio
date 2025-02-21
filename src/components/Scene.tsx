@@ -1,8 +1,6 @@
-'use client';
-
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Float, PresentationControls, Environment, Stars } from '@react-three/drei';
+import { Environment, Float, PresentationControls, Stars } from '@react-three/drei';
 import * as THREE from 'three';
 
 interface SceneProps {
@@ -10,19 +8,19 @@ interface SceneProps {
 }
 
 function FloatingCrystals() {
-  const crystals = Array.from({ length: 15 }, (_, i) => ({
+  const crystals = Array.from({ length: 30 }, (_, i) => ({
     position: [
-      Math.random() * 10 - 5,
-      Math.random() * 10 - 5,
-      Math.random() * 10 - 5
+      Math.random() * 20 - 10,
+      Math.random() * 20 - 10,
+      Math.random() * 20 - 10
     ],
     rotation: [
       Math.random() * Math.PI,
       Math.random() * Math.PI,
       Math.random() * Math.PI
     ],
-    scale: Math.random() * 0.4 + 0.2,
-    speed: Math.random() * 0.3 + 0.2
+    scale: Math.random() * 0.3 + 0.1,
+    speed: Math.random() * 0.5 + 0.5
   }));
 
   return (
@@ -31,8 +29,8 @@ function FloatingCrystals() {
         <Float
           key={i}
           speed={crystal.speed} 
-          rotationIntensity={0.6} 
-          floatIntensity={1.5}
+          rotationIntensity={0.5} 
+          floatIntensity={2}
           position={crystal.position as [number, number, number]}
         >
           <mesh
@@ -40,15 +38,12 @@ function FloatingCrystals() {
             scale={crystal.scale}
           >
             <octahedronGeometry args={[1, 0]} />
-            <meshPhysicalMaterial
+            <meshStandardMaterial
               color="#00f5d4"
               roughness={0.1}
               metalness={0.8}
               emissive="#00f5d4"
-              emissiveIntensity={0.4}
-              transparent
-              opacity={0.9}
-              envMapIntensity={1.5}
+              emissiveIntensity={0.2}
             />
           </mesh>
         </Float>
@@ -98,27 +93,19 @@ export default function Scene({ rotationSpeed = 0.2 }: SceneProps) {
 
   return (
     <>
-      {/* Enhanced Lighting */}
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[5, 5, 5]} intensity={0.8} castShadow />
-      <pointLight position={[0, 0, 0]} intensity={1.5} color="#00f5d4" />
-      <spotLight
-        position={[10, 10, 10]}
-        angle={0.3}
-        penumbra={1}
-        intensity={1}
-        castShadow
-      />
-      
+      {/* Lighting */}
+      <ambientLight intensity={0.2} />
+      <directionalLight position={[5, 5, 5]} intensity={0.5} castShadow />
+      <pointLight position={[0, 0, 0]} intensity={1} color="#00f5d4" />
       <Environment preset="night" />
       <Stars
-        radius={50}
+        radius={100}
         depth={50}
-        count={3000}
+        count={5000}
         factor={4}
-        saturation={1}
+        saturation={0}
         fade
-        speed={0.5}
+        speed={1}
       />
 
       {/* Background Elements */}
@@ -130,9 +117,8 @@ export default function Scene({ rotationSpeed = 0.2 }: SceneProps) {
         global
         rotation={[0.13, 0.1, 0]}
         polar={[-0.4, 0.2]}
-        azimuth={[-0.5, 0.5]}
-        config={{ mass: 2, tension: 400 }}
-        snap={{ mass: 4, tension: 400 }}
+        azimuth={[-1, 0.75]}
+        snap={true}
       >
         <Float rotationIntensity={0.4} floatIntensity={0.5}>
           <mesh
@@ -141,16 +127,13 @@ export default function Scene({ rotationSpeed = 0.2 }: SceneProps) {
             castShadow
             receiveShadow
           >
-            <torusKnotGeometry args={[1, 0.3, 256, 32]} />
-            <meshPhysicalMaterial
+            <torusKnotGeometry args={[1, 0.3, 128, 16]} />
+            <meshStandardMaterial
               color="#00f5d4"
-              roughness={0.1}
-              metalness={0.9}
+              roughness={0.2}
+              metalness={0.8}
               emissive="#00f5d4"
-              emissiveIntensity={0.4}
-              clearcoat={1}
-              clearcoatRoughness={0.1}
-              envMapIntensity={2}
+              emissiveIntensity={0.2}
             />
           </mesh>
         </Float>

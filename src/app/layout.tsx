@@ -1,16 +1,21 @@
-import './globals.css';
-import React from 'react';
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
-import ThemeProvider from '@/components/ThemeProvider';
+import type { Metadata } from "next";
+import { Space_Grotesk, Outfit } from "next/font/google";
+import ThemeProvider from "@/components/ThemeProvider";
+import "./globals.css";
 
-const inter = Inter({ subsets: ['latin'] });
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+});
 
 export const metadata: Metadata = {
-  title: 'Creative Developer Portfolio',
-  description: 'A portfolio showcasing creative development work',
+  title: "Portfolio",
+  description: "My professional portfolio showcasing my work and skills",
 };
 
 export default function RootLayout({
@@ -19,14 +24,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.className} flex flex-col min-h-screen`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${spaceGrotesk.variable} ${outfit.variable} font-sans`}>
         <ThemeProvider>
-          <Navigation />
-          <main className="flex-grow">
-            {children}
-          </main>
-          <Footer />
+          {children}
         </ThemeProvider>
       </body>
     </html>
