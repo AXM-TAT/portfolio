@@ -1,19 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { supabase } from '@/utils/supabase';
 
-interface BlogPost {
-  id: string;
-  title: string;
-  content: string;
-  created_at: string;
-  user_id: string;
-}
-
 interface BlogPostProps {
-  post?: BlogPost;
+  post?: {
+    id: string;
+    title: string;
+    content: string;
+    created_at: string;
+    user_id: string;
+  };
   isEditing?: boolean;
   onSuccess?: () => void;
 }
@@ -23,7 +20,7 @@ export default function BlogPost({ post, isEditing = false, onSuccess }: BlogPos
   const [content, setContent] = useState(post?.content || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [previewMode, setPreviewMode] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,22 +33,11 @@ export default function BlogPost({ post, isEditing = false, onSuccess }: BlogPos
     setError('');
 
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        throw new Error('No session found');
-      }
-
-      // Get the authenticated user
-      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       
-      if (userError) throw userError;
-      if (!userData?.user) throw new Error('No user found');
+      if (!user) throw new Error('No user found');
 
       if (isEditing && post) {
-        // Update existing post
         const { error: updateError } = await supabase
           .from('posts')
           .update({
@@ -60,18 +46,17 @@ export default function BlogPost({ post, isEditing = false, onSuccess }: BlogPos
             updated_at: new Date().toISOString(),
           })
           .eq('id', post.id)
-          .eq('user_id', userData.user.id); // Ensure user owns the post
+          .eq('user_id', user.id);
 
         if (updateError) throw updateError;
       } else {
-        // Create new post
         const { error: insertError } = await supabase
           .from('posts')
           .insert([
             {
               title,
               content,
-              user_id: userData.user.id,
+              user_id: user.id,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             },
@@ -80,7 +65,7 @@ export default function BlogPost({ post, isEditing = false, onSuccess }: BlogPos
         if (insertError) throw insertError;
       }
 
-      // Clear form and notify parent
+      setSuccess(true);
       if (!isEditing) {
         setTitle('');
         setContent('');
@@ -88,94 +73,91 @@ export default function BlogPost({ post, isEditing = false, onSuccess }: BlogPos
       onSuccess?.();
     } catch (error: any) {
       console.error('Error:', error);
-      setError(error.message || 'Failed to save post. Please try again.');
+      setError(error.message || 'Failed to save post');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="w-full rounded-2xl glass-effect overflow-hidden"
-    >
-      <div className="p-6 border-b border-white/10">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold text-gradient">
-            {isEditing ? 'Edit Post' : 'Create New Post'}
-          </h2>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setPreviewMode(!previewMode)}
-            className="px-4 py-2 rounded-lg border border-primary text-primary hover:bg-primary/10 transition"
+  if (success) {
+    return (
+      <div className="bg-gray-900/50 rounded-lg p-6 border border-gray-800">
+        <div className="text-center py-4">
+          <div className="w-16 h-16 bg-cyan-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 className="text-2xl font-bold text-cyan-400 mb-2">Post Published!</h3>
+          <p className="text-gray-400 mb-4">Your post has been published successfully.</p>
+          <button
+            onClick={() => setSuccess(false)}
+            className="px-6 py-2 bg-gray-800 text-cyan-400 rounded-md hover:bg-gray-700 transition-colors"
           >
-            {previewMode ? 'Edit' : 'Preview'}
-          </motion.button>
+            Write Another Post
+          </button>
         </div>
+      </div>
+    );
+  }
 
+  return (
+    <div className="bg-gray-900/50 rounded-lg p-6 border border-gray-800">
+      <h3 className="text-2xl font-bold text-cyan-400 mb-6">
+        {isEditing ? 'Edit Post' : 'Create New Post'}
+      </h3>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200">
+          <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200">
             {error}
           </div>
         )}
 
-        {previewMode ? (
-          <div className="space-y-4">
-            <h1 className="text-4xl font-bold">{title || 'Untitled'}</h1>
-            <div className="prose prose-invert max-w-none">
-              {content || 'No content yet...'}
-            </div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Title
-              </label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg bg-black/20 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Enter your post title..."
-                required
-              />
-            </div>
+        <div>
+          <label htmlFor="title" className="block text-gray-300 mb-2">
+            Title
+          </label>
+          <input
+            id="title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full px-4 py-3 bg-black/20 border border-gray-800 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+            placeholder="Enter your post title..."
+            required
+          />
+        </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Content
-              </label>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={12}
-                className="w-full px-4 py-3 rounded-lg bg-black/20 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary font-mono"
-                placeholder="Write your post content..."
-                required
-              />
-            </div>
+        <div>
+          <label htmlFor="content" className="block text-gray-300 mb-2">
+            Content
+          </label>
+          <textarea
+            id="content"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={12}
+            className="w-full px-4 py-3 bg-black/20 border border-gray-800 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+            placeholder="Write your post content..."
+            required
+          />
+        </div>
 
-            <div className="flex justify-end space-x-4">
-              <motion.button
-                type="submit"
-                disabled={loading}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 rounded-lg bg-gradient-to-r from-primary to-secondary text-black font-semibold hover:opacity-90 transition disabled:opacity-50"
-              >
-                {loading ? (
-                  <div className="w-6 h-6 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                ) : (
-                  isEditing ? 'Update Post' : 'Publish Post'
-                )}
-              </motion.button>
-            </div>
-          </form>
-        )}
-      </div>
-    </motion.div>
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-6 py-3 bg-gradient-to-r from-cyan-400 to-cyan-600 text-black font-semibold rounded-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <div className="w-6 h-6 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+            ) : (
+              isEditing ? 'Update Post' : 'Publish Post'
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 } 

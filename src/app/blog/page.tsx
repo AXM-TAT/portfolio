@@ -1,12 +1,11 @@
 'use client';
 
-import React from 'react';
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabase';
 import Auth from '@/components/Auth';
 import BlogPost from '@/components/BlogPost';
 import AIChatbox from '@/components/AIChatbox';
+import Link from 'next/link';
 
 interface Post {
   id: string;
@@ -16,12 +15,28 @@ interface Post {
   user_id: string;
 }
 
+interface BlogPost {
+  title: string;
+  excerpt: string;
+  date: string;
+  slug: string;
+}
+
+const blogPosts: BlogPost[] = [
+  {
+    title: "Is it true that humans only use 10% of their brains?",
+    excerpt: "The idea that humans only use 10% of their brains is a myth. Brain imaging studies show that almost all parts of the brain are active...",
+    date: "February 20, 2025",
+    slug: "brain-myth"
+  },
+  // Add more blog posts here
+];
+
 export default function BlogPage() {
   const [session, setSession] = useState<any>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [showNewPost, setShowNewPost] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -63,7 +78,6 @@ export default function BlogPage() {
       setPosts([]);
       setShowNewPost(false);
       setShowChat(false);
-      setSelectedPost(null);
       
       await supabase.auth.signOut();
       setSession(null);
@@ -85,157 +99,86 @@ export default function BlogPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="relative h-[40vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-background to-background" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/20 via-background to-transparent" />
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <button 
+          onClick={() => {
+            setShowNewPost(true);
+            setShowChat(false);
+          }}
+          className="bg-cyan-400 text-black px-6 py-2 rounded-md hover:opacity-90 transition-opacity flex items-center gap-2"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+          New Post
+        </button>
+        <button 
+          onClick={() => {
+            setShowChat(true);
+            setShowNewPost(false);
+          }}
+          className="border border-cyan-400 text-cyan-400 px-6 py-2 rounded-md hover:bg-cyan-400/10 transition-colors flex items-center gap-2"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+          Open AI Chat
+        </button>
+      </div>
+
+      {/* New Post Form */}
+      {showNewPost && (
+        <div className="mb-8">
+          <BlogPost onSuccess={() => {
+            setShowNewPost(false);
+            fetchPosts();
+          }} />
         </div>
-        
-        <div className="relative z-10 text-center">
-          <motion.h1
-            className="text-5xl md:text-7xl font-bold mb-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+      )}
+
+      {/* AI Chat */}
+      {showChat && (
+        <div className="mb-8">
+          <AIChatbox />
+        </div>
+      )}
+
+      {/* Blog Posts Grid */}
+      <div className="grid gap-6">
+        {blogPosts.map((post) => (
+          <div 
+            key={post.slug}
+            className="block bg-gray-900/50 rounded-lg p-6 hover:bg-gray-900/70 transition-colors border border-gray-800 group"
           >
-            <span className="text-gradient">Blog & Thoughts</span>
-          </motion.h1>
-          <motion.p
-            className="text-xl text-gray-400"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            Share your ideas and connect with AI
-          </motion.p>
-        </div>
-      </section>
-
-      {/* Content Section */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <div className="flex justify-center mb-8">
-          <div className="space-y-4">
-            <div className="flex space-x-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowNewPost(!showNewPost)}
-                className="px-6 py-3 rounded-lg bg-gradient-to-r from-primary to-secondary text-black font-semibold hover:opacity-90 transition"
+            <h2 className="text-2xl font-bold text-cyan-400 mb-2">{post.title}</h2>
+            <p className="text-gray-400 mb-4">{post.excerpt}</p>
+            <div className="flex justify-between items-center">
+              <time className="text-gray-500">{post.date}</time>
+              <Link 
+                href={`/blog/${post.slug}`}
+                className="text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center gap-2 group-hover:gap-3 duration-300"
               >
-                {showNewPost ? '✕ Cancel' : '✎ New Post'}
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowChat(!showChat)}
-                className="px-6 py-3 rounded-lg border border-primary text-primary hover:bg-primary/10 transition"
-              >
-                {showChat ? '✕ Close AI Chat' : '🤖 Open AI Chat'}
-              </motion.button>
-            </div>
-            <motion.button
-              onClick={handleSignOut}
-              disabled={loading}
-              className="px-6 py-2 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10 hover:bg-primary/10 hover:border-primary/50 transition-all flex items-center justify-center space-x-2 text-white/90 font-medium disabled:opacity-50 disabled:cursor-not-allowed w-full"
-              whileHover={{ scale: loading ? 1 : 1.05 }}
-              whileTap={{ scale: loading ? 1 : 0.95 }}
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              {loading ? (
-                <>
-                  <span>Signing Out</span>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                </>
-              ) : (
-                <>
-                  <span>Sign Out</span>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                    />
-                  </svg>
-                </>
-              )}
-            </motion.button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Posts Column */}
-          <div className="lg:col-span-2 space-y-8">
-            <AnimatePresence>
-              {showNewPost && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden"
-                >
-                  <BlogPost />
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="space-y-6">
-              <AnimatePresence>
-                {posts.map((post, index) => (
-                  <motion.article
-                    key={post.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="group glass-effect p-6 rounded-2xl hover:border-primary/50 transition-all duration-300"
-                    onClick={() => setSelectedPost(selectedPost?.id === post.id ? null : post)}
-                  >
-                    <h2 className="text-2xl font-bold mb-4 text-gradient">{post.title}</h2>
-                    <p className="text-gray-300 mb-4 line-clamp-3 group-hover:line-clamp-none transition-all duration-300">
-                      {post.content}
-                    </p>
-                    <div className="flex justify-between items-center text-sm text-gray-400">
-                      <span>{new Date(post.created_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}</span>
-                      <button className="text-primary hover:underline">
-                        {selectedPost?.id === post.id ? 'Show Less' : 'Read More'}
-                      </button>
-                    </div>
-                  </motion.article>
-                ))}
-              </AnimatePresence>
+                Read More
+                <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
             </div>
           </div>
+        ))}
+      </div>
 
-          {/* Chat Column */}
-          <div className="lg:col-span-1">
-            <AnimatePresence>
-              {showChat && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className="sticky top-24"
-                >
-                  <AIChatbox />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-      </section>
-    </main>
+      {/* Sign Out Button */}
+      <div className="mt-8 text-center">
+        <button
+          onClick={handleSignOut}
+          disabled={loading}
+          className="text-gray-400 hover:text-cyan-400 transition-colors"
+        >
+          Sign Out
+        </button>
+      </div>
+    </div>
   );
 } 

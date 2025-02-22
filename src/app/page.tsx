@@ -13,104 +13,114 @@ import Contact from '@/components/Contact';
 // Dynamically import the 3D scene to avoid SSR issues
 const Scene = dynamic(() => import('@/components/Scene'), { ssr: false });
 
-export default function Home() {
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    element?.scrollIntoView({ behavior: 'smooth' });
-  };
-
+export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between bg-background text-foreground">
-      {/* Theme Toggle */}
-      <ThemeToggle />
-      
-      {/* Navigation */}
-      <Navigation />
-      
+    <>
       {/* Hero Section */}
-      <section id="hero" className="relative w-full h-screen">
-        {/* 3D Canvas */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden -mt-16">
+        {/* Background Effects */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-cyan-500/10 via-black to-black"></div>
         <div className="absolute inset-0">
-          <Canvas
-            camera={{ position: [0, 0, 5], fov: 75 }}
-            className="w-full h-full"
-          >
-            <Suspense fallback={null}>
-              <Scene />
-            </Suspense>
-          </Canvas>
+          <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-500/30 rounded-full filter blur-[120px]"></div>
+          <div className="absolute bottom-20 right-10 w-72 h-72 bg-cyan-500/30 rounded-full filter blur-[120px]"></div>
         </div>
-
-        {/* Content Overlay */}
-        <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center">
-          <motion.h1 
-            className="text-6xl md:text-8xl font-bold text-gradient neon-glow mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            Creative Developer
-          </motion.h1>
-          
-          <motion.p 
-            className="text-xl md:text-2xl text-gray-200 mb-8 max-w-2xl glass-effect p-4 rounded-lg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-          >
-            Crafting immersive digital experiences with cutting-edge technology and creative design
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.8 }}
-          >
-            <button 
-              onClick={() => scrollToSection('about')}
-              className="px-8 py-3 text-lg font-semibold rounded-full bg-primary text-white hover:bg-primary-dark transition-colors duration-300"
-            >
-              Explore My Work
-            </button>
-          </motion.div>
+        
+        {/* Content */}
+        <div className="container mx-auto px-6 relative">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-block mb-4">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-cyan-400/20 bg-cyan-400/5 backdrop-blur-sm">
+                <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                <span className="text-cyan-400 text-sm font-medium">Available for freelance work</span>
+              </div>
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-bold mb-8">
+              <span className="bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-400 bg-clip-text text-transparent">
+                Creative Developer
+              </span>
+              <br />
+              <span className="text-white">
+                Building Digital Experiences
+              </span>
+            </h1>
+            
+            <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
+              Transforming ideas into elegant and functional web solutions with modern technologies and innovative design
+            </p>
+            
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <a
+                href="/projects"
+                className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-cyan-400 text-black font-semibold rounded-lg hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-shadow"
+              >
+                View Projects
+              </a>
+              <a
+                href="/contact"
+                className="px-8 py-4 border border-cyan-400/50 text-cyan-400 font-semibold rounded-lg hover:bg-cyan-400/10 transition-colors"
+              >
+                Contact Me
+              </a>
+            </div>
+          </div>
         </div>
-
-        {/* Scroll Indicator */}
-        <motion.div 
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-        >
-          <svg 
-            className="w-6 h-6 text-primary"
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M19 14l-7 7m0 0l-7-7m7 7V3"
-            />
-          </svg>
-        </motion.div>
       </section>
 
-      {/* About Section */}
-      <section id="about">
-        <About />
-      </section>
+      {/* Featured Projects */}
+      <section className="py-24 relative">
+        <div className="container mx-auto px-6">
+          <div className="flex items-center justify-center gap-4 mb-16">
+            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-cyan-400"></div>
+            <h2 className="text-3xl font-bold text-center">Featured Projects</h2>
+            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-cyan-400"></div>
+          </div>
 
-      {/* Projects Section */}
-      <section id="projects">
-        <Projects />
-      </section>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="group bg-gray-900/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-800/50 hover:border-cyan-400/50 transition-colors">
+              <div className="flex items-start justify-between mb-4">
+                <h3 className="text-2xl font-bold text-cyan-400">AXOM Intelligence</h3>
+                <span className="px-3 py-1 bg-cyan-400/10 text-cyan-400 text-sm rounded-full">Featured</span>
+              </div>
+              <p className="text-gray-400 mb-6">
+                An advanced AI chat platform powered by OpenAI, featuring real-time responses and natural language processing.
+              </p>
+              <div className="flex flex-wrap gap-2 mb-6">
+                <span className="px-3 py-1 bg-gray-800/50 rounded-full text-sm text-gray-300">Next.js</span>
+                <span className="px-3 py-1 bg-gray-800/50 rounded-full text-sm text-gray-300">OpenAI</span>
+                <span className="px-3 py-1 bg-gray-800/50 rounded-full text-sm text-gray-300">Supabase</span>
+              </div>
+              <a href="/projects" className="text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center gap-2">
+                View Project
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+            </div>
 
-      {/* Contact Section */}
-      <section id="contact">
-        <Contact />
+            <div className="group bg-gray-900/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-800/50 hover:border-cyan-400/50 transition-colors">
+              <div className="flex items-start justify-between mb-4">
+                <h3 className="text-2xl font-bold text-cyan-400">Portfolio Blog</h3>
+                <span className="px-3 py-1 bg-cyan-400/10 text-cyan-400 text-sm rounded-full">Latest</span>
+              </div>
+              <p className="text-gray-400 mb-6">
+                A modern blog platform with AI integration, authentication, and real-time updates.
+              </p>
+              <div className="flex flex-wrap gap-2 mb-6">
+                <span className="px-3 py-1 bg-gray-800/50 rounded-full text-sm text-gray-300">React</span>
+                <span className="px-3 py-1 bg-gray-800/50 rounded-full text-sm text-gray-300">TypeScript</span>
+                <span className="px-3 py-1 bg-gray-800/50 rounded-full text-sm text-gray-300">TailwindCSS</span>
+              </div>
+              <a href="/projects" className="text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center gap-2">
+                View Project
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
       </section>
-    </main>
+    </>
   );
 }

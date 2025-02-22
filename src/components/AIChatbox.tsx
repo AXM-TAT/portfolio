@@ -84,39 +84,50 @@ export default function AIChatbox() {
     e.preventDefault();
     if (!input.trim() || !userId || loading) return;
 
-    const userMessage = input;
+    const userMessage = input.trim();
     setInput('');
     setLoading(true);
     setIsTyping(true);
 
+    // Add user message to chat
+    setMessages(prev => [...prev, {
+      id: '',
+      content: userMessage,
+      role: 'user',
+      timestamp: new Date(),
+      user_id: userId
+    }]);
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          message: userMessage,
-          userId: userId
-        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: userMessage, userId }),
       });
 
-      const data = await response.json();
+      if (!response.ok) throw new Error('Failed to get response');
 
-      if (!response.ok) {
-        if (response.status === 429) {
-          // The error message will be automatically added to the messages
-          // through the Supabase subscription
-          console.warn('OpenAI API rate limit reached:', data.error);
-        } else {
-          throw new Error(data.error || 'Failed to send message');
-        }
-      }
-    } catch (error: any) {
+      const data = await response.json();
+      
+      // Add AI response to chat
+      setMessages(prev => [...prev, {
+        id: '',
+        content: data.message,
+        role: 'assistant',
+        timestamp: new Date(),
+        user_id: userId
+      }]);
+    } catch (error) {
       console.error('Error:', error);
-      setIsTyping(false);
-      // Only show alert for non-rate-limit errors
-      if (error?.message !== 'OpenAI API rate limit reached') {
-        alert('Failed to send message. Please try again.');
-      }
+      setMessages(prev => [...prev, { 
+        id: '',
+        content: 'Sorry, I encountered an error. Please try again.',
+        role: 'assistant', 
+        timestamp: new Date(),
+        user_id: userId
+      }]);
     } finally {
       setLoading(false);
     }
@@ -166,136 +177,73 @@ export default function AIChatbox() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl glass-effect overflow-hidden border border-white/10"
-    >
-      <div className="p-4 border-b border-white/10 bg-black/20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
-            <h2 className="text-xl font-semibold text-gradient">AXOM INTELLIGENCE</h2>
-          </div>
-          <div className="flex items-center space-x-2">
-            {isSelecting && (
-              <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                onClick={handleDeleteMessages}
-                disabled={selectedMessages.size === 0}
-                className="px-3 py-1 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors disabled:opacity-50"
-              >
-                Delete ({selectedMessages.size})
-              </motion.button>
-            )}
-            <motion.button
-              onClick={() => {
-                setIsSelecting(!isSelecting);
-                if (isSelecting) setSelectedMessages(new Set());
-              }}
-              className={`px-3 py-1 rounded-lg transition-colors ${
-                isSelecting 
-                  ? 'bg-primary/20 text-primary hover:bg-primary/30' 
-                  : 'bg-white/5 hover:bg-white/10'
-              }`}
-            >
-              {isSelecting ? 'Cancel' : 'Select'}
-            </motion.button>
-          </div>
-        </div>
+    <div className="bg-gray-900/50 rounded-lg border border-gray-800 flex flex-col h-[600px]">
+      <div className="p-4 border-b border-gray-800">
+        <h3 className="text-xl font-semibold text-cyan-400 flex items-center gap-2">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+          AI Chat Assistant
+        </h3>
       </div>
 
-      <div className="h-[600px] flex flex-col">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          <AnimatePresence>
-            {messages.map((message) => (
-              <motion.div
-                key={message.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                onClick={() => toggleMessageSelection(message.id)}
-                className={`flex ${
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 ? (
+          <div className="text-center text-gray-400 mt-8">
+            <p>No messages yet.</p>
+            <p className="text-sm mt-2">Start a conversation with the AI assistant!</p>
+          </div>
+        ) : (
+          messages.map((message, index) => (
+            <div
+              key={index}
+              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                  message.role === 'user'
+                    ? 'bg-cyan-400 text-black'
+                    : 'bg-gray-800 text-gray-200'
                 }`}
               >
-                <div
-                  className={`relative max-w-[80%] p-4 rounded-2xl transition-colors cursor-pointer ${
-                    message.role === 'user'
-                      ? 'bg-primary/20 ml-auto'
-                      : 'bg-black/20'
-                  } ${
-                    isSelecting ? 'hover:bg-white/5' : ''
-                  } ${
-                    selectedMessages.has(message.id) ? 'ring-2 ring-primary' : ''
-                  }`}
-                >
-                  {isSelecting && (
-                    <div className="absolute -left-6 top-1/2 -translate-y-1/2">
-                      <div className={`w-4 h-4 rounded-full border-2 transition-colors ${
-                        selectedMessages.has(message.id)
-                          ? 'border-primary bg-primary'
-                          : 'border-white/50'
-                      }`} />
-                    </div>
-                  )}
-                  {message.role === 'assistant' && (
-                    <div className="text-xs font-semibold text-primary mb-1">AXOM</div>
-                  )}
-                  <p className="text-white/90 whitespace-pre-wrap">{message.content}</p>
-                  <span className="text-xs text-white/50 mt-2 block">
-                    {message.timestamp.toLocaleTimeString()}
-                  </span>
-                </div>
-              </motion.div>
-            ))}
-            {isTyping && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex justify-start"
-              >
-                <div className="bg-black/20 p-4 rounded-2xl">
-                  <div className="text-xs font-semibold text-primary mb-2">AXOM</div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <div ref={messagesEndRef} />
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-4 border-t border-white/10 bg-black/20">
-          <div className="flex space-x-4">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask AXOM anything..."
-              className="flex-1 px-4 py-2 rounded-lg bg-black/20 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
-              disabled={loading || isSelecting}
-            />
-            <motion.button
-              type="submit"
-              disabled={loading || !input.trim() || isSelecting}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-6 py-2 rounded-lg bg-gradient-to-r from-primary to-secondary text-black font-semibold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <div className="w-6 h-6 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-              ) : (
-                'Send'
-              )}
-            </motion.button>
+                {message.content}
+              </div>
+            </div>
+          ))
+        )}
+        {loading && (
+          <div className="flex justify-start">
+            <div className="bg-gray-800 rounded-lg px-4 py-2 text-gray-200">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+              </div>
+            </div>
           </div>
-        </form>
+        )}
       </div>
-    </motion.div>
+
+      <form onSubmit={handleSubmit} className="p-4 border-t border-gray-800">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type your message..."
+            className="flex-1 bg-black/20 border border-gray-800 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+          />
+          <button
+            type="submit"
+            disabled={loading || !input.trim()}
+            className="px-4 py-2 bg-cyan-400 text-black rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }

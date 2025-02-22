@@ -45,9 +45,13 @@ export default function Projects() {
   return (
     <section className="min-h-screen py-20 px-4 md:px-8" id="projects">
       <div className="container mx-auto max-w-6xl">
-        <SectionTitle>Featured Projects</SectionTitle>
+        <SectionTitle>
+          <span className="bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-400 bg-clip-text text-transparent">
+            Featured Projects
+          </span>
+        </SectionTitle>
         
-        <p className="text-gray-400 max-w-2xl mx-auto text-center mb-12">
+        <p className="text-gray-300 max-w-2xl mx-auto text-center mb-12">
           Explore some of my recent work showcasing my skills in web development,
           design, and problem-solving.
         </p>
