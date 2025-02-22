@@ -2,6 +2,7 @@ import './globals.css';
 import React from 'react';
 import { Inter, Montserrat } from 'next/font/google';
 import RootWrapper from '@/components/RootWrapper';
+import { ThemeProvider } from '@/components/ThemeProvider';
 import type { Metadata } from 'next';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -24,9 +25,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.className} ${montserrat.variable} bg-black text-gray-200 min-h-screen`}>
-        <RootWrapper className="overflow-x-hidden">
-          {children}
-        </RootWrapper>
+        <ThemeProvider>
+          <RootWrapper className="overflow-x-hidden">
+            {children}
+          </RootWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );
