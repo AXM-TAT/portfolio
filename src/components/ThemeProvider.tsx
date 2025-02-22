@@ -13,4 +13,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       {children}
     </NextThemesProvider>
   );
-} 
+}
+
+// Add default export
+export default ThemeProvider; 

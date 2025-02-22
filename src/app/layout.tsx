@@ -1,9 +1,8 @@
 import './globals.css';
-import React from 'react';
+import type { Metadata } from 'next';
 import { Inter, Montserrat } from 'next/font/google';
 import RootWrapper from '@/components/RootWrapper';
-import { ThemeProvider } from '@/components/ThemeProvider';
-import type { Metadata } from 'next';
+import ThemeProvider from '@/components/ThemeProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 const montserrat = Montserrat({ 
