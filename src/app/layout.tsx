@@ -2,7 +2,7 @@ import './globals.css';
 import React from 'react';
 import { Inter, Montserrat } from 'next/font/google';
 import RootWrapper from '@/components/RootWrapper';
-import ThemeProvider from '@/components/ThemeProvider';
+import { ThemeProvider } from '@/components/ThemeProvider';
 import type { Metadata } from 'next';
 
 const inter = Inter({ subsets: ['latin'] });

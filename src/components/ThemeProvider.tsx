@@ -7,7 +7,7 @@ interface ThemeProviderProps {
   children: ReactNode;
 }
 
-export default function ThemeProvider({ children }: ThemeProviderProps) {
+export function ThemeProvider({ children }: ThemeProviderProps) {
   return (
     <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem>
       {children}
